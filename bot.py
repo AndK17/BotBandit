@@ -14,7 +14,14 @@ async def cmd_start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Бизнес", "Работа","Магазин","Казино"]
     keyboard.add(*buttons)
-    await message.answer("...", reply_markup=keyboard)
+    await message.answer("Ты в главном меню, " + str(message.chat.first_name) + ". У тебя на счету " + "**** рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
+
+@dp.message_handler(lambda message: message.text == "Выйти в главное меню")
+async def teacher(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Бизнес", "Работа","Магазин","Казино"]
+    keyboard.add(*buttons)
+    await message.answer("Ты в главном меню, " + str(message.chat.first_name) + ". У тебя на счету " + "**** рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
 
 @dp.message_handler(lambda message: message.text == "Бизнес")
 async def buisness(message: types.Message):
@@ -35,24 +42,33 @@ async def teacher(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Приступить к работе", "Выйти в главное меню"]
     keyboard.add(*buttons)
-    await message.answer("Привет, твоя задача...", reply_markup=keyboard)
+    await message.answer("Привет, твоя задача.... Твой баланс: " + "****" + "рублей", reply_markup=keyboard)
 
-@dp.message_handler(lambda message: message.text == "Выйти в главное меню")
-async def teacher(message: types.Message):
+@dp.message_handler(lambda message: message.text == "Приступить к работе")
+async def start_work(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Бизнес", "Работа","Магазин","Казино"]
+    buttons = ["Пропустить задание", "Выйти в главное меню"]
     keyboard.add(*buttons)
-    await message.answer("...", reply_markup=keyboard)
+    await message.answer("Расшифруй слово " + "***", reply_markup=keyboard) #здесь берутся слова из заданий
+
+@dp.message_handler(lambda message: message.text == "Пропустить задание")
+async def start_work(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Пропустить задание", "Выйти в главное меню"]
+    keyboard.add(*buttons)
+    await message.answer("Расшифруй слово " + "***", reply_markup=keyboard) #здесь берутся слова из заданий
+
+#@dp.message_handler(lambda message: message.text == ???) #здесь нужно подумать как считывать правильный ответ и зачислять баланс
 
 @dp.message_handler(lambda message: message.text == "Магазин")
-async def teacher(message: types.Message):
+async def shop(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Выйти в главное меню"]
     keyboard.add(*buttons)
     await message.answer("Тут пока ничего нет...", reply_markup=keyboard)
 
 @dp.message_handler(lambda message: message.text == "Казино")
-async def teacher(message: types.Message):
+async def casino(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Рулетка","Выйти в главное меню"]
     keyboard.add(*buttons)
