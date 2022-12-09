@@ -48,7 +48,8 @@ async def teacher(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Приступить к работе", "Выйти в главное меню"]
     keyboard.add(*buttons)
-    await message.answer("Привет, твоя задача.... Твой баланс: " + "****" + "рублей", reply_markup=keyboard)
+    balance = db.get_balance(message.from_user.id)
+    await message.answer(f"Привет, твоя задача.... Твой баланс: {balance} рублей", reply_markup=keyboard)
 
 @dp.message_handler(lambda message: message.text == "Приступить к работе")
 async def start_work(message: types.Message):
