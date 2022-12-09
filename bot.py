@@ -1,27 +1,33 @@
 import config
 import logging
-
+from db import DB
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton)
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=config.TOKEN)
 dp = Dispatcher(bot)
 
+db = DB()
+
+
 @dp.message_handler(commands = "start")
 async def cmd_start(message: types.Message):
+    db.append_user(message.from_user.id)
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Бизнес", "Работа","Магазин","Казино"]
     keyboard.add(*buttons)
-    await message.answer("Ты в главном меню, " + str(message.chat.first_name) + ". У тебя на счету " + "**** рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
+    balance = db.get_balance(message.from_user.id)
+    await message.answer(f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
 
 @dp.message_handler(lambda message: message.text == "Выйти в главное меню")
 async def teacher(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Бизнес", "Работа","Магазин","Казино"]
     keyboard.add(*buttons)
-    await message.answer("Ты в главном меню, " + str(message.chat.first_name) + ". У тебя на счету " + "**** рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
+    balance = db.get_balance(message.from_user.id)
+    await message.answer(f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
 
 @dp.message_handler(lambda message: message.text == "Бизнес")
 async def buisness(message: types.Message):
