@@ -137,16 +137,26 @@ async def get_bet(message: types.Message, state: FSMContext):
 @dp.message_handler(lambda message: message.text == "Красное")
 async def casino_red(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(0, 1):
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result_color == "красное":
         db.set_balance(message.from_user.id, balance + bet)
         balance += bet
-        await message.answer(f"Ваша ставка сыграла :)\n"
+        await message.answer(f"Выпало {result} - красное :)\n"
                              f"Вы выиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color}  :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
@@ -154,16 +164,26 @@ async def casino_red(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Черное")
 async def casino_black(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(0, 1):
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result_color == "чёрное":
         db.set_balance(message.from_user.id, balance + bet)
         balance += bet
-        await message.answer(f"Ваша ставка сыграла :)\n"
+        await message.answer(f"Выпало {result} - чёрное :)\n"
                              f"Вы выиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color}  :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
@@ -171,16 +191,26 @@ async def casino_black(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Zero")
 async def casino_zero(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(1, 36) == 36:
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result_color == "зеро":
         db.set_balance(message.from_user.id, balance + bet*36)
         balance += bet*36
-        await message.answer(f"Ваша ставка сыграла :)\n"
+        await message.answer(f"Выпало 0 - зеро :)\n"
                              f"Вы выиграли {bet*36} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color}  :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
@@ -188,16 +218,26 @@ async def casino_zero(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Чётное")
 async def casino_even(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(0, 1):
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result % 2 == 0:
         db.set_balance(message.from_user.id, balance + bet)
         balance += bet
-        await message.answer(f"Ваша ставка сыграла :)\n"
+        await message.answer(f"Выпало {result} - {result_color} :)\n"
                              f"Вы выиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color} :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
@@ -205,16 +245,26 @@ async def casino_even(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Нечётное")
 async def casino_not_even(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(0, 1):
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result % 2 != 0:
         db.set_balance(message.from_user.id, balance + bet)
         balance += bet
-        await message.answer(f"Ваша ставка сыграла :)\n"
+        await message.answer(f"Выпало {result} - {result_color} :)\n"
                              f"Вы выиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color} :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
@@ -222,16 +272,26 @@ async def casino_not_even(message: types.Message):
 @dp.message_handler(lambda message: message.text == "1st")
 async def casino_1st(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(1, 37) <= 12:
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result <= 12 and result != 0:
         db.set_balance(message.from_user.id, balance + bet*3)
         balance += bet*3
-        await message.answer(f"Ваша ставка сыграла :)\n"
+        await message.answer(f"Выпало {result} - {result_color} :)\n"
                              f"Вы выиграли {bet*3} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color} :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
@@ -239,16 +299,26 @@ async def casino_1st(message: types.Message):
 @dp.message_handler(lambda message: message.text == "2nd")
 async def casino_2nd(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(1, 37) <= 12:
-        db.set_balance(message.from_user.id, balance + bet*3)
-        balance += bet*3
-        await message.answer(f"Ваша ставка сыграла :)\n"
-                             f"Вы выиграли {bet*3} рублей\n"
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result >= 13 and result <= 24:
+        db.set_balance(message.from_user.id, balance + bet * 3)
+        balance += bet * 3
+        await message.answer(f"Выпало {result} - {result_color} :)\n"
+                             f"Вы выиграли {bet * 3} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color} :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
@@ -256,16 +326,26 @@ async def casino_2nd(message: types.Message):
 @dp.message_handler(lambda message: message.text == "3rd")
 async def casino_3rd(message: types.Message):
     balance = db.get_balance(message.from_user.id)
-    if randint(1, 37) <= 12:
-        db.set_balance(message.from_user.id, balance + bet*3)
-        balance += bet*3
-        await message.answer(f"Ваша ставка сыграла :)\n"
-                             f"Вы выиграли {bet*3} рублей\n"
+    result = randint(0, 36)
+    reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
+    if result == 0:
+        result_color = "зеро"
+    else:
+        if result in reds:
+            result_color = "красное"
+        else:
+            result_color = "чёрное"
+
+    if result >= 25:
+        db.set_balance(message.from_user.id, balance + bet * 3)
+        balance += bet * 3
+        await message.answer(f"Выпало {result} - {result_color} :)\n"
+                             f"Вы выиграли {bet * 3} рублей\n"
                              f"Ваш баланс: {balance}")
     else:
         db.set_balance(message.from_user.id, balance - bet)
         balance -= bet
-        await message.answer(f"Ваша ставка не сыграла :(\n"
+        await message.answer(f"Выпало {result} - {result_color} :(\n"
                              f"Вы проиграли {bet} рублей\n"
                              f"Ваш баланс: {balance}")
 
