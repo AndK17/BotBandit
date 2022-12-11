@@ -7,6 +7,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from random import randint
+from task_generator import generate_task
 
 logging.basicConfig(level=logging.INFO)
 
@@ -18,10 +19,14 @@ dp = Dispatcher(bot, storage=storage)
 db = DB()
 
 bet = 0
+task = 0
 
 
 class FSMBet(StatesGroup):
     bet = State()
+
+class FSMWork(StatesGroup):
+    task = State()
 
 @dp.message_handler(commands = "start")
 async def cmd_start(message: types.Message):
@@ -50,34 +55,66 @@ async def buisness(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Работа")
 async def work(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Учитель"]
+    buttons = ["Препод по линалу"]
     keyboard.add(*buttons)
-    await message.answer("...", reply_markup=keyboard)
+    await message.answer(f"Выбери кем ты хочешь работать", reply_markup=keyboard)
 
-@dp.message_handler(lambda message: message.text == "Учитель")
+@dp.message_handler(lambda message: message.text == "Препод по линалу")
 async def teacher(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Приступить к работе", "Выйти в главное меню"]
     keyboard.add(*buttons)
     balance = db.get_balance(message.from_user.id)
-    await message.answer(f"Привет, твоя задача.... Твой баланс: {balance} рублей", reply_markup=keyboard)
+    await message.answer(f"Привет, твоя задача считать опредеители матриц, справишься? За каждую правильно решённую задачу будешь получать по 1000 рублей. Твой баланс: {balance} рублей", reply_markup=keyboard)
 
 @dp.message_handler(lambda message: message.text == "Приступить к работе")
 async def start_work(message: types.Message):
+    global task 
+    task = generate_task()
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Пропустить задание", "Выйти в главное меню"]
+    buttons = ["Пропустить задание", "Я устал, Босс"]
     keyboard.add(*buttons)
-    await message.answer("Расшифруй слово " + "***", reply_markup=keyboard) #здесь берутся слова из заданий
+    await FSMWork.task.set()
+    await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard) 
 
 @dp.message_handler(lambda message: message.text == "Пропустить задание")
 async def start_work(message: types.Message):
+    global task 
+    task = generate_task()
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Пропустить задание", "Выйти в главное меню"]
+    buttons = ["Пропустить задание", "Я устал, Босс"]
     keyboard.add(*buttons)
-    await message.answer("Расшифруй слово " + "***", reply_markup=keyboard) #здесь берутся слова из заданий
+    await FSMWork.task.set()
+    await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard) 
 
-#@dp.message_handler(lambda message: message.text == ???) #здесь нужно подумать как считывать правильный ответ и зачислять баланс
-
+@dp.message_handler(content_types=["text"], state=FSMWork.task)
+async def get_bet(message: types.Message, state: FSMContext):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Пропустить задание", "Я устал, Босс"]
+    keyboard.add(*buttons)
+    balance = db.get_balance(message.from_user.id)
+    global task
+    if message.text == "Пропустить задание":
+        task = generate_task()
+        await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
+    elif message.text.isdigit():
+        if task[1] == int(message.text):
+            task = generate_task()
+            db.set_balance(message.from_user.id, balance + 1000)
+            balance += 1000
+            await message.answer(f"Правильно! Ваш баланс: {balance} рублей", reply_markup=keyboard)
+            await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
+        else:
+            await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboard)
+    elif message.text == "Я устал, Босс":
+        await state.finish()
+        keyboard = types.ReplyKeyboardMarkup()
+        buttons = ["Выйти в главное меню"]
+        keyboard.add(*buttons)
+        await message.answer(f"Вы точно хотите уйти?", reply_markup=keyboard)
+    else:
+        await message.answer(f"Решай задачу или иди отсюда, бездарь!", reply_markup=keyboard)
+    
 @dp.message_handler(lambda message: message.text == "Магазин")
 async def shop(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
