@@ -13,8 +13,8 @@ class DB():
         self.cursor = self.conn.cursor()
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS business(business_id INTEGER PRIMARY KEY, name TEXT, description TEXT, income INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS shop(item_id INTEGER PRIMARY KEY, name TEXT, item_type TEXT, price INTEGER, photo_id INTEGER);''')
-        self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, business INTEGER,
-                                                     shoes INTEGER, pants INTEGER, tshort INTEGER, hat INTEGER, house INTEGER, bet INTEGER,
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, business INTEGER, shoes INTEGER,
+                                                     pants INTEGER, tshort INTEGER, hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER,
                                                      FOREIGN KEY (business) REFERENCES business (business_id),
                                                      FOREIGN KEY (shoes) REFERENCES shop (item_id),
                                                      FOREIGN KEY (pants) REFERENCES shop (item_id),
@@ -25,8 +25,8 @@ class DB():
 
 
     def append_user(self, user_id):
-        data = (user_id, 0, -1, -1, -1, -1, -1, -1, 100)
-        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);", data)
+        data = (user_id, 0, -1, -1, -1, -1, -1, -1, 100, None)
+        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", data)
         self.conn.commit()
         
         
@@ -59,6 +59,10 @@ class DB():
         self.cursor.execute(f'UPDATE users SET house = "{house}" WHERE user_id = {user_id}')
         self.conn.commit()
 
+    def set_work_answer(self, user_id, work_answer):
+        self.cursor.execute(f'UPDATE users SET work_answer = "{work_answer}" WHERE user_id = {user_id}')
+        self.conn.commit()
+        
     def set_bet(self, user_id, bet):
         self.cursor.execute(f'UPDATE users SET bet = "{bet}" WHERE user_id = {user_id}')
         self.conn.commit()
@@ -77,6 +81,10 @@ class DB():
     
     def get_bet(self, user_id):
         self.cursor.execute(f"SELECT bet FROM users WHERE user_id = {user_id}")
+        return self.cursor.fetchone()[0]
+
+    def get_work_answer(self, user_id):
+        self.cursor.execute(f"SELECT work_answer FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
     
     

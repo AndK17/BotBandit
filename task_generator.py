@@ -2,6 +2,14 @@ from random import randint
 
 
 def determinant(matrix):
+    """Функция вычисляющая детерминат переданной матрицы
+
+    Args:
+        matrix (list): Матрица детерминант которой необходимо посчитать
+
+    Returns:
+        res (int): Значение детерминанта матрицы
+    """
     if len(matrix) == 1:
         return matrix[0][0]
     for i in range(len(matrix[0])):
@@ -21,15 +29,22 @@ def determinant(matrix):
 
 
 def generate_task(size=3):
-    answer = -1
-    while answer < 0:
-        a = [[0 for i in range(size)] for _ in range(size)]
+    """Функция генерирующая задание с ответом - матрицу и ее детерминант
 
-        for i in range(size):
-            for j in range(size):
-                a[i][j] = randint(0, 10)
-        
-        answer = determinant(a)
+    Args:
+        size (int, optional): Размер стороны квадратной матрицы. Defaults to 3.
+
+    Returns:
+        a (list): матрица
+        answer (int): детерминант этой матрицы
+    """
+    a = [[0 for i in range(size)] for _ in range(size)]
+
+    for i in range(size):
+        for j in range(size):
+            a[i][j] = randint(0, 10)
+    
+    answer = determinant(a)
     return a, answer
 
 if __name__ == '__main__':
