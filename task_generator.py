@@ -33,4 +33,4 @@ def generate_task(size=3):
     return a, answer
 
 if __name__ == '__main__':
-    generate_task()
+    print(generate_task())
