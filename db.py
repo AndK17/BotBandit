@@ -18,7 +18,7 @@ class DB():
                                                      business_id INTEGER, shoes INTEGER, pants INTEGER, tshort INTEGER,
                                                      hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER, last_online timestamp,
                                                      businnes_balance INTEGER, business_raw_materials INTEGER,
-                                                     FOREIGN KEY (business) REFERENCES business (business_id),
+                                                     FOREIGN KEY (business_id) REFERENCES business_id (business_id),
                                                      FOREIGN KEY (shoes) REFERENCES shop (item_id),
                                                      FOREIGN KEY (pants) REFERENCES shop (item_id),
                                                      FOREIGN KEY (tshort) REFERENCES shop (item_id),
