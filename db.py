@@ -15,7 +15,7 @@ class DB():
                                                                     max_balance INTEGER, max_raw_materials INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS shop(item_id INTEGER PRIMARY KEY, name TEXT, item_type TEXT, price INTEGER, photo_id INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, 
-                                                     business INTEGER, shoes INTEGER, pants INTEGER, tshort INTEGER,
+                                                     business_id INTEGER, shoes INTEGER, pants INTEGER, tshort INTEGER,
                                                      hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER, last_online timestamp,
                                                      businnes_balance INTEGER, business_raw_materials INTEGER,
                                                      FOREIGN KEY (business) REFERENCES business (business_id),

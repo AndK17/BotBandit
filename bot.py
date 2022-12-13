@@ -117,9 +117,9 @@ async def get_bet(message: types.Message, state: FSMContext):
 @dp.message_handler(lambda message: message.text == "Магазин")
 async def shop(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Выйти в главное меню"]
+    buttons = ['Обувь', 'Штаны', 'Футболки', 'Шапки', "Выйти в главное меню"]
     keyboard.add(*buttons)
-    await message.answer("Тут пока ничего нет...", reply_markup=keyboard)
+    await message.answer("Добро пожаловать в магазин!\nВыберите категорию товара", reply_markup=keyboard)
 
 @dp.message_handler(lambda message: message.text == "Казино")
 async def casino(message: types.Message):
