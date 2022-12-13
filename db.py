@@ -2,7 +2,7 @@ import sqlite3 as sq
     
 
 class DB():
-    """docstring for DB."""
+    """Класс для работы с базой данных"""
     def __init__(self, file_name='bot_bandit.db'):
         self.file_name = file_name
         self.connect()
@@ -11,10 +11,13 @@ class DB():
     def connect(self):
         self.conn = sq.connect(self.file_name)
         self.cursor = self.conn.cursor()
-        self.cursor.execute('''CREATE TABLE IF NOT EXISTS business(business_id INTEGER PRIMARY KEY, name TEXT, description TEXT, income INTEGER);''')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS business(business_id INTEGER PRIMARY KEY, name TEXT, description TEXT, income INTEGER,
+                                                                    max_balance INTEGER, max_raw_materials INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS shop(item_id INTEGER PRIMARY KEY, name TEXT, item_type TEXT, price INTEGER, photo_id INTEGER);''')
-        self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, business INTEGER, shoes INTEGER,
-                                                     pants INTEGER, tshort INTEGER, hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER,
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, 
+                                                     business INTEGER, shoes INTEGER, pants INTEGER, tshort INTEGER,
+                                                     hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER, last_online timestamp,
+                                                     businnes_balance INTEGER, business_raw_materials INTEGER,
                                                      FOREIGN KEY (business) REFERENCES business (business_id),
                                                      FOREIGN KEY (shoes) REFERENCES shop (item_id),
                                                      FOREIGN KEY (pants) REFERENCES shop (item_id),
@@ -25,8 +28,8 @@ class DB():
 
 
     def append_user(self, user_id):
-        data = (user_id, 0, -1, -1, -1, -1, -1, -1, 100, None)
-        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", data)
+        data = (user_id, 0, -1, -1, -1, -1, -1, -1, 100, None, 0, 0)
+        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?);", data)
         self.conn.commit()
         
         
@@ -59,6 +62,10 @@ class DB():
         self.cursor.execute(f'UPDATE users SET house = "{house}" WHERE user_id = {user_id}')
         self.conn.commit()
 
+    def set_last_online(self, user_id, last_online):
+        self.cursor.execute(f'UPDATE users SET last_online = "{last_online}" WHERE user_id = {user_id}')
+        self.conn.commit()
+        
     def set_work_answer(self, user_id, work_answer):
         self.cursor.execute(f'UPDATE users SET work_answer = "{work_answer}" WHERE user_id = {user_id}')
         self.conn.commit()
@@ -66,6 +73,15 @@ class DB():
     def set_bet(self, user_id, bet):
         self.cursor.execute(f'UPDATE users SET bet = "{bet}" WHERE user_id = {user_id}')
         self.conn.commit()
+    
+    def set_business_balance(self, user_id, business_balance):
+        self.cursor.execute(f'UPDATE users SET business_balance = "{business_balance}" WHERE user_id = {user_id}')
+        self.conn.commit()
+        
+    def set_business_raw_materials(self, user_id, business_raw_materials):
+        self.cursor.execute(f'UPDATE users SET business_raw_materials = "{business_raw_materials}" WHERE user_id = {user_id}')
+        self.conn.commit()
+    
 
     def get_user(self, user_id):
         self.cursor.execute(f"SELECT * FROM users WHERE user_id = {user_id}")
@@ -87,7 +103,19 @@ class DB():
         self.cursor.execute(f"SELECT work_answer FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
     
+    def get_last_online(self, user_id):
+        self.cursor.execute(f"SELECT last_online FROM users WHERE user_id = {user_id}")
+        return self.cursor.fetchone()[0]
     
+    def get_business_balance(self, user_id):
+        self.cursor.execute(f"SELECT business_balance FROM users WHERE user_id = {user_id}")
+        return self.cursor.fetchone()[0]
+    
+    def get_business_raw_materials(self, user_id):
+        self.cursor.execute(f"SELECT business_raw_materials FROM users WHERE user_id = {user_id}")
+        return self.cursor.fetchone()[0]
+    
+     
     def delete_user(self, user_id):
         self.cursor.execute(f"DELETE FROM users WHERE user_id = {user_id}")
         self.conn.commit()
