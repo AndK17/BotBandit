@@ -86,7 +86,9 @@ async def teacher(message: types.Message):
     buttons = ["Бизнес", "Работа","Магазин","Казино"]
     keyboard.add(*buttons)
     balance = db.get_balance(message.from_user.id)
-    await message.answer(f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard)
+    photo = open(get_my_photo(message.from_user.id), 'rb')
+    await bot.send_photo(message.from_user.id, photo, 
+                         caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == message.text in ["Бизнес", "Назад"])
