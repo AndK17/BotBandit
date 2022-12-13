@@ -18,7 +18,6 @@ dp = Dispatcher(bot, storage=storage)
 
 db = DB()
 
-bet = 0
 task = 0
 
 
@@ -124,8 +123,7 @@ async def shop(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Казино")
 async def casino(message: types.Message):
-    global bet
-    bet = 0
+    db.set_bet(message.from_user.id, 0)
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Рулетка","Выйти в главное меню"]
     keyboard.add(*buttons)
@@ -134,6 +132,7 @@ async def casino(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Рулетка")
 async def roulette(message: types.Message):
+    bet = db.get_bet(message.from_user.id)
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Изменить ставку", "Красное", "Черное", "Zero", "Чётное", "Нечётное",
                "1st", "2nd", "3rd", "Выйти в главное меню"]
@@ -145,9 +144,7 @@ async def roulette(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Изменить ставку")
 async def change_bet(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Изменить ставку", "Красное", "Черное", "Zero", "Чётное", "Нечётное",
-               "1st", "2nd", "3rd", "Выйти в главное меню"]
-    keyboard.add(*buttons)
+    keyboard.add("Выйти в главное меню")
     await FSMBet.bet.set()
     await message.answer("Введите ставку (натуральное число):", reply_markup=keyboard)
 
@@ -158,21 +155,34 @@ async def get_bet(message: types.Message, state: FSMContext):
     buttons = ["Изменить ставку", "Красное", "Черное", "Zero", "Чётное", "Нечётное",
                "1st", "2nd", "3rd", "Выйти в главное меню"]
     keyboard.add(*buttons)
-    global bet
     balance = db.get_balance(message.from_user.id)
     if message.text.isdigit():
         bet = int(message.text)
         if bet <= balance:
+            db.set_bet(message.from_user.id, int(message.text))
             await message.answer(f"Ваш баланс: {balance} рублей\nВаша ставка: {bet} рублей", reply_markup=keyboard)
             await state.finish()
         else:
             await message.answer("Ставка не может быть больше баланса\nПожалуйста, введите ставку снова:")
+    elif message.text == "Выйти в главное меню":
+        await state.finish()
+        await cmd_start(message)
     else:
         await message.answer("Ставка должна быть натуральным числом\nПожалуйста, введите ставку снова:")
 
 
+@dp.message_handler(lambda message: message.text in ["Красное", "Черное", "Zero", "Чётное", "Нечётное", "1st", "2nd", "3rd"] and db.get_bet(message.from_user.id) > db.get_balance(message.from_user.id))
+async def bet_problem(message: types.Message):
+    balance = db.get_balance(message.from_user.id)
+    bet = db.get_bet(message.from_user.id)
+    await message.answer(f"Вы не можете играть со ставкой превышающей баланс\n"
+                         f"Ваш баланс: {balance}\n"
+                         f"Ваша ставка: {bet}")
+
+
 @dp.message_handler(lambda message: message.text == "Красное")
 async def casino_red(message: types.Message):
+    bet = db.get_bet(message.from_user.id)
     balance = db.get_balance(message.from_user.id)
     result = randint(0, 36)
     reds = [32, 19, 21, 25, 34, 27, 36, 30, 23, 5, 16, 1, 14, 9, 18, 7, 12, 3]
@@ -210,7 +220,7 @@ async def casino_black(message: types.Message):
             result_color = "красное"
         else:
             result_color = "чёрное"
-
+    bet = db.get_bet(message.from_user.id)
     if result_color == "чёрное":
         db.set_balance(message.from_user.id, balance + bet)
         balance += bet
@@ -237,7 +247,7 @@ async def casino_zero(message: types.Message):
             result_color = "красное"
         else:
             result_color = "чёрное"
-
+    bet = db.get_bet(message.from_user.id)
     if result_color == "зеро":
         db.set_balance(message.from_user.id, balance + bet*36)
         balance += bet*36
@@ -264,7 +274,7 @@ async def casino_even(message: types.Message):
             result_color = "красное"
         else:
             result_color = "чёрное"
-
+    bet = db.get_bet(message.from_user.id)
     if result % 2 == 0:
         db.set_balance(message.from_user.id, balance + bet)
         balance += bet
@@ -291,7 +301,7 @@ async def casino_not_even(message: types.Message):
             result_color = "красное"
         else:
             result_color = "чёрное"
-
+    bet = db.get_bet(message.from_user.id)
     if result % 2 != 0:
         db.set_balance(message.from_user.id, balance + bet)
         balance += bet
@@ -318,7 +328,7 @@ async def casino_1st(message: types.Message):
             result_color = "красное"
         else:
             result_color = "чёрное"
-
+    bet = db.get_bet(message.from_user.id)
     if result <= 12 and result != 0:
         db.set_balance(message.from_user.id, balance + bet*3)
         balance += bet*3
@@ -345,7 +355,7 @@ async def casino_2nd(message: types.Message):
             result_color = "красное"
         else:
             result_color = "чёрное"
-
+    bet = db.get_bet(message.from_user.id)
     if result >= 13 and result <= 24:
         db.set_balance(message.from_user.id, balance + bet * 3)
         balance += bet * 3
@@ -372,7 +382,7 @@ async def casino_3rd(message: types.Message):
             result_color = "красное"
         else:
             result_color = "чёрное"
-
+    bet = db.get_bet(message.from_user.id)
     if result >= 25:
         db.set_balance(message.from_user.id, balance + bet * 3)
         balance += bet * 3
