@@ -36,6 +36,7 @@ async def cmd_start(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     await message.answer(f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
 
+
 @dp.message_handler(lambda message: message.text == "Выйти в главное меню")
 async def teacher(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
@@ -44,22 +45,134 @@ async def teacher(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     await message.answer(f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard)
 
-@dp.message_handler(lambda message: message.text == "Бизнес")
+
+@dp.message_handler(lambda message: message.text == message.text in ["Бизнес", "Назад"])
 async def business(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Купить бизнес", "Управление бизнесом","Выйти в главное меню"]
     keyboard.add(*buttons)
-    await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом. ", reply_markup=keyboard)
+    await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboard)
+
 
 @dp.message_handler(lambda message: message.text == "Купить бизнес")
 async def business(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Шаурмичная", "Завод пива", "Крупнейшая IT-компания"]
     keyboard.add(*buttons)
-    if db.get_business_id(message.from_user.id) == -1:
+    business = db.get_business_id(message.from_user.id)
+    if business == -1:
         await message.answer(f"Какой бизнес хочешь купить?", reply_markup=keyboard)
     else:
-        await message.answer(f"У тебя уже есть бизнес")
+        await message.answer(f"У тебя уже есть свой бизнес")
+
+
+@dp.message_handler(lambda message: message.text == "Шаурмичная")
+async def business_doner_kebab(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить \"Шаурмичную\"", "Назад"]
+    keyboard.add(*buttons)
+    await message.answer(f"Маленькая шаурмичная на окраине Москвы.\nСТОИМОСТЬ: 100000 рублей", reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Завод пива")
+async def business_doner_kebab(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить \"Завод пива\"", "Назад"]
+    keyboard.add(*buttons)
+    await message.answer(f"Завод пива в Подмосковье.\nСТОИМОСТЬ: 5000000 рублей", reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Крупнейшая IT-компания")
+async def business_doner_kebab(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить \"Крупнейшая IT-компания\"", "Назад"]
+    keyboard.add(*buttons)
+    await message.answer(f"Крупнейшая IT-компания основанная в Москве.\nСТОИМОСТЬ: 100000000 рублей", reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Купить \"Шаурмичную\"")
+async def business_doner_kebab(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить бизнес", "Управление бизнесом","Выйти в главное меню"]
+    keyboard.add(*buttons)
+    balance = db.get_balance(message.from_user.id)
+    if balance >= 100000:
+        db.set_balance(message.from_user.id, balance - 100000)
+        db.set_business_id(message.from_user.id, 1)
+        await message.answer(f"Поздравляю с покупкой!\nУ тебя на счету осталось {db.get_balance(message.from_user.id)} рублей", reply_markup=keyboard)
+    else:
+        await message.answer(f"У тебя не хватает средств :(", reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Купить \"Завод пива\"")
+async def business_factory(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить бизнес", "Управление бизнесом","Выйти в главное меню"]
+    keyboard.add(*buttons)
+    balance = db.get_balance(message.from_user.id)
+    if balance >= 5000000:
+        db.set_balance(message.from_user.id, balance - 5000000)
+        db.set_business_id(message.from_user.id, 2)
+        await message.answer(f"Поздравляю с покупкой!\nУ тебя на счету осталось {db.get_balance(message.from_user.id)}  рублей", reply_markup=keyboard)
+    else:
+        await message.answer(f"У тебя не хватает средств :(", reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Купить \"Крупнейшая IT-компания\"")
+async def business_IT(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить бизнес", "Управление бизнесом","Выйти в главное меню"]
+    keyboard.add(*buttons)
+    balance = db.get_balance(message.from_user.id)
+    if balance >= 100000000:
+        db.set_balance(message.from_user.id, balance - 100000000)
+        db.set_business_id(message.from_user.id, 3)
+        await message.answer(f"Поздравляю с покупкой!\nУ тебя на счету осталось {db.get_balance(message.from_user.id)}  рублей", reply_markup=keyboard)
+    else:
+        await message.answer(f"У тебя не хватает средств :(", reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == message.text in ["Управление бизнесом", "Нет, я передумал"])
+async def lead(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Продать бизнес", "Купить сырьё на все деньги","Вывести деньги", "Назад"]
+    keyboard.add(*buttons)
+    if db.get_business_id(message.from_user.id) == 1:
+        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nШаурмичная", reply_markup=keyboard)
+    elif db.get_business_id(message.from_user.id) == 2:
+        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nЗавод пива", reply_markup=keyboard) 
+    elif db.get_business_id(message.from_user.id) == 3:
+        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nКрупнейшая IT-компания", reply_markup=keyboard)
+    else:
+        await message.answer(f"У тебя ещё нет своего бизнеса")
+    
+
+@dp.message_handler(lambda message: message.text == "Продать бизнес")
+async def sell_business(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Да, я хочу продать свой бизнес", "Нет, я передумал"]
+    keyboard.add(*buttons)
+    await message.answer(f"Ты уверен, что хочешь продать свой бизнес?\nТы получишь только 75% от стоимости бизнеса", reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Да, я хочу продать свой бизнес")
+async def sell_business(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить бизнес", "Управление бизнесом","Выйти в главное меню"]
+    keyboard.add(*buttons)
+    balance = db.get_balance(message.from_user.id)
+    if db.get_business_id(message.from_user.id) == 1:
+        db.set_business_id(message.from_user.id, -1)
+        db.set_balance(message.from_user.id, balance + 0.75*100000)
+        await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboard)
+    elif db.get_business_id(message.from_user.id) == 2:
+        db.set_business_id(message.from_user.id, -1)
+        db.set_balance(message.from_user.id, balance + 0.75*5000000)
+        await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboard)
+    else:
+        db.set_business_id(message.from_user.id, -1)
+        db.set_balance(message.from_user.id, balance + 0.75*100000000)
+        await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Работа")
@@ -69,6 +182,7 @@ async def work(message: types.Message):
     keyboard.add(*buttons)
     await message.answer(f"Выбери кем ты хочешь работать", reply_markup=keyboard)
 
+
 @dp.message_handler(lambda message: message.text == "Препод по линалу")
 async def teacher(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
@@ -76,6 +190,7 @@ async def teacher(message: types.Message):
     keyboard.add(*buttons)
     balance = db.get_balance(message.from_user.id)
     await message.answer(f"Привет, твоя задача считать опредеители матриц, справишься? За каждую правильно решённую задачу будешь получать по 1000 рублей. Твой баланс: {balance} рублей", reply_markup=keyboard)
+
 
 @dp.message_handler(lambda message: message.text == "Приступить к работе")
 async def start_work(message: types.Message):
@@ -87,6 +202,7 @@ async def start_work(message: types.Message):
     await FSMWork.task.set()
     await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard) 
 
+
 @dp.message_handler(lambda message: message.text == "Пропустить задание")
 async def skip_work(message: types.Message):
     global task 
@@ -96,6 +212,7 @@ async def skip_work(message: types.Message):
     keyboard.add(*buttons)
     await FSMWork.task.set()
     await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard) 
+
 
 @dp.message_handler(content_types=["text"], state=FSMWork.task)
 async def get_bet(message: types.Message, state: FSMContext):
@@ -116,6 +233,17 @@ async def get_bet(message: types.Message, state: FSMContext):
             await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
         else:
             await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboard)
+    
+    elif message.text[0] == "-" and message.text[1:].isdigit():
+        if task[1] == int(message.text):
+            task = generate_task()
+            db.set_balance(message.from_user.id, balance + 1000)
+            balance += 1000
+            await message.answer(f"Правильно! Ваш баланс: {balance} рублей", reply_markup=keyboard)
+            await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
+        else:
+            await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboard)
+
     elif message.text == "Я устал, Босс":
         await state.finish()
         keyboard = types.ReplyKeyboardMarkup()
@@ -124,13 +252,15 @@ async def get_bet(message: types.Message, state: FSMContext):
         await message.answer(f"Вы точно хотите уйти?", reply_markup=keyboard)
     else:
         await message.answer(f"Решай задачу или иди отсюда, бездарь!", reply_markup=keyboard)
-    
+
+
 @dp.message_handler(lambda message: message.text == "Магазин")
 async def shop(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ['Обувь', 'Штаны', 'Футболки', 'Шапки', "Выйти в главное меню"]
     keyboard.add(*buttons)
     await message.answer("Добро пожаловать в магазин!\nВыберите категорию товара", reply_markup=keyboard)
+
 
 @dp.message_handler(lambda message: message.text == "Казино")
 async def casino(message: types.Message):
