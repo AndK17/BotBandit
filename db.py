@@ -37,7 +37,6 @@ class DB():
         self.cursor.execute(f'UPDATE users SET balance = "{balance}" WHERE user_id = {user_id}')
         self.conn.commit()
 
-
     def set_business_id(self, user_id, business_id):
         self.cursor.execute(f'UPDATE users SET business_id = "{business_id}" WHERE user_id = {user_id}')
         self.conn.commit()
@@ -91,8 +90,8 @@ class DB():
         self.cursor.execute(f"SELECT balance FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
     
-    def get_balance(self, user_id):
-        self.cursor.execute(f"SELECT balance FROM users WHERE user_id = {user_id}")
+    def get_business_id(self, user_id):
+        self.cursor.execute(f"SELECT business_id FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
     
     def get_bet(self, user_id):
