@@ -42,14 +42,25 @@ async def teacher(message: types.Message):
     buttons = ["Бизнес", "Работа","Магазин","Казино"]
     keyboard.add(*buttons)
     balance = db.get_balance(message.from_user.id)
-    await message.answer(f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard) #здесь на месте звёздочек должен появлятся баланс
+    await message.answer(f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard)
 
 @dp.message_handler(lambda message: message.text == "Бизнес")
-async def buisness(message: types.Message):
+async def business(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Купить бизнес", "Управление бизнесом","Выйти в главное меню"]
     keyboard.add(*buttons)
-    await message.answer("...", reply_markup=keyboard)
+    await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом. ", reply_markup=keyboard)
+
+@dp.message_handler(lambda message: message.text == "Купить бизнес")
+async def business(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Шаурмичная", "Завод пива", "Крупнейшая IT-компания"]
+    keyboard.add(*buttons)
+    if db.get_business_id(message.from_user.id) == -1:
+        await message.answer(f"Какой бизнес хочешь купить?", reply_markup=keyboard)
+    else:
+        await message.answer(f"У тебя уже есть бизнес")
+
 
 @dp.message_handler(lambda message: message.text == "Работа")
 async def work(message: types.Message):
@@ -77,7 +88,7 @@ async def start_work(message: types.Message):
     await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard) 
 
 @dp.message_handler(lambda message: message.text == "Пропустить задание")
-async def start_work(message: types.Message):
+async def skip_work(message: types.Message):
     global task 
     task = generate_task()
     keyboard = types.ReplyKeyboardMarkup()
