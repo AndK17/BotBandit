@@ -14,13 +14,13 @@ class DB():
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS business(business_id INTEGER PRIMARY KEY, name TEXT, description TEXT, income INTEGER,
                                                                     max_balance INTEGER, max_raw_materials INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS shop(item_id INTEGER PRIMARY KEY, name TEXT, item_type TEXT, price INTEGER, photo_id INTEGER);''')
+        # self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_photos(items_combination TEXT PRIMARY KEY, photo_id INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, 
-                                                     business_id INTEGER, shoes INTEGER, pants INTEGER, tshort INTEGER,
+                                                     business_id INTEGER, shoes INTEGER, tshort INTEGER,
                                                      hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER, last_online timestamp,
                                                      businnes_balance INTEGER, business_raw_materials INTEGER,
-                                                     FOREIGN KEY (business_id) REFERENCES business_id (business_id),
+                                                     FOREIGN KEY (business_id) REFERENCES business (business_id)
                                                      FOREIGN KEY (shoes) REFERENCES shop (item_id),
-                                                     FOREIGN KEY (pants) REFERENCES shop (item_id),
                                                      FOREIGN KEY (tshort) REFERENCES shop (item_id),
                                                      FOREIGN KEY (hat) REFERENCES shop (item_id),
                                                      FOREIGN KEY (house) REFERENCES shop (item_id));''')
@@ -28,8 +28,8 @@ class DB():
 
 
     def append_user(self, user_id):
-        data = (user_id, 0, -1, -1, -1, -1, -1, -1, 100, None, 0, 0)
-        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?);", data)
+        data = (user_id, 0, -1, -1, -1, -1, -1, 100, None, 0, 0)
+        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?);", data)
         self.conn.commit()
         
         
@@ -45,10 +45,6 @@ class DB():
         self.cursor.execute(f'UPDATE users SET shoes = "{shoes}" WHERE user_id = {user_id}')
         self.conn.commit()
 
-    def set_pants(self, user_id, pants):
-        self.cursor.execute(f'UPDATE users SET pants = "{pants}" WHERE user_id = {user_id}')
-        self.conn.commit()
-
     def set_tshort(self, user_id, tshort):
         self.cursor.execute(f'UPDATE users SET tshort = "{tshort}" WHERE user_id = {user_id}')
         self.conn.commit()
@@ -57,7 +53,7 @@ class DB():
         self.cursor.execute(f'UPDATE users SET hat = "{hat}" WHERE user_id = {user_id}')
         self.conn.commit()
         
-    def set_tshort(self, user_id, house):
+    def set_house(self, user_id, house):
         self.cursor.execute(f'UPDATE users SET house = "{house}" WHERE user_id = {user_id}')
         self.conn.commit()
 
@@ -93,6 +89,14 @@ class DB():
     def get_business_id(self, user_id):
         self.cursor.execute(f"SELECT business_id FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
+    
+    def get_shop_item(self, item_id):
+        self.cursor.execute(f"SELECT * FROM shop WHERE item_id = {item_id}")
+        return self.cursor.fetchone()
+    
+    def get_shop_item_by_type(self, item_type):
+        self.cursor.execute(f"SELECT * FROM shop WHERE item_type = '{item_type}'")
+        return self.cursor.fetchall()
     
     def get_bet(self, user_id):
         self.cursor.execute(f"SELECT bet FROM users WHERE user_id = {user_id}")
