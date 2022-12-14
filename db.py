@@ -118,6 +118,10 @@ class DB():
         self.cursor.execute(f"SELECT business_raw_materials FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
     
+    def get_liderboard(self):
+        self.cursor.execute(f"SELECT * FROM users ORDER BY balance DESC")
+        return self.cursor.fetchall()[:10]
+    
      
     def delete_user(self, user_id):
         self.cursor.execute(f"DELETE FROM users WHERE user_id = {user_id}")
