@@ -46,22 +46,22 @@ def get_my_photo(user_id):
         img = Image.new("RGB", (1920, 1080), (255, 255, 255))
     
     man = Image.open('shop_items/man.png')
-    img.paste(man, (0, 0), man)
+    img.paste(man, (0, 200), man)
     
     if shoes_id != -1:
         shoes_id = db.get_shop_item(shoes_id)[-1]
         shoes = Image.open(f'shop_items/shoes/{shoes_id}.png')
-        img.paste(shoes, (0, 0), shoes)
+        img.paste(shoes, (0, 200), shoes)
     
     if tshort_id != -1:
         tshort_id = db.get_shop_item(tshort_id)[-1]
         tshort = Image.open(f'shop_items/tshort/{tshort_id}.png')
-        img.paste(tshort, (0, 0), tshort)
+        img.paste(tshort, (0, 200), tshort)
     
     if hat_id != -1:
         hat_id = db.get_shop_item(hat_id)[-1]
         hat = Image.open(f'shop_items/hat/{hat_id}.png')
-        img.paste(hat, (0, 0), hat)
+        img.paste(hat, (0, 200), hat)
 
     
     img.save(f"shop_items/result/{house_id}_{shoes_id}_{tshort_id}_{hat_id}.png")
