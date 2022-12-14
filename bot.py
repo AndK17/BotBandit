@@ -1,5 +1,6 @@
 import config
 import logging
+import time
 from db import DB
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
@@ -191,19 +192,90 @@ async def business_IT(message: types.Message):
         await message.answer(f"У тебя не хватает средств :(", reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == message.text in ["Управление бизнесом", "Нет, я передумал"])
+@dp.message_handler(lambda message: message.text in ["Управление бизнесом", "Нет, я передумал"])
 async def lead(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Продать бизнес", "Купить сырьё на все деньги","Вывести деньги", "Назад"]
+    buttons = ["Продать бизнес", "Информация о бизнесе","Купить сырьё на все деньги","Вывести деньги", "Назад"]
     keyboard.add(*buttons)
     if db.get_business_id(message.from_user.id) == 1:
-        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nШаурмичная", reply_markup=keyboard)
+        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nШаурмичная\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанято мест на складе: {db.get_business_raw_materials(message.from_user.id)}/100", reply_markup=keyboard)
     elif db.get_business_id(message.from_user.id) == 2:
-        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nЗавод пива", reply_markup=keyboard) 
+        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nЗавод пива\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанято мест на складе: {db.get_business_raw_materials(message.from_user.id)}/300", reply_markup=keyboard) 
     elif db.get_business_id(message.from_user.id) == 3:
-        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nКрупнейшая IT-компания", reply_markup=keyboard)
+        await message.answer(f"Привет, здесь ты можешь управлять своим бизнеcом:\nКрупнейшая IT-компания\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанято мест на складе: {db.get_business_raw_materials(message.from_user.id)}/1000", reply_markup=keyboard)
     else:
         await message.answer(f"У тебя ещё нет своего бизнеса")
+
+@dp.message_handler(lambda message: message.text == "Вывести деньги")
+async def take_money(message: types.Message):
+    if db.get_business_balance(message.from_user.id) > 0:
+        db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) + db.get_business_balance(message.from_user.id))
+        await message.answer(f"Тебе на счёт поступило {db.get_business_balance(message.from_user.id)} рублей.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей")
+        db.set_business_balance(message.from_user.id, 0)
+    else:
+        await message.answer(f"На счету твоего бизнеса нет денег")
+
+@dp.message_handler(lambda message: message.text == "Информация о бизнесе")
+async def business_info(message: types.Message):
+    Time = time.time()
+    if db.get_business_id(message.from_user.id) == 1:
+        if Time - db.get_last_online(message.from_user.id) >= 100:
+            db.set_business_balance(message.from_user.id, db.get_business_balance(message.from_user.id) + db.get_business_raw_materials(message.from_user.id)*100)
+            db.set_business_raw_materials(message.from_user.id, 0)
+            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Шаурмичная\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
+        else:
+            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Шаурмичная\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {100 - Time + db.get_last_online(message.from_user.id) } секунд")
+    elif db.get_business_id(message.from_user.id) == 2:
+        if Time - db.get_last_online(message.from_user.id) >= 300:
+            db.set_business_balance(message.from_user.id, db.get_business_balance(message.from_user.id) + db.get_business_raw_materials(message.from_user.id)*100)
+            db.set_business_raw_materials(message.from_user.id, 0)
+            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Завод пива\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
+        else:
+            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Завод пива\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {300 - Time + db.get_last_online(message.from_user.id) } секунд")
+    else:
+        if Time - db.get_last_online(message.from_user.id) >= 1000:
+            db.set_business_balance(message.from_user.id, db.get_business_balance(message.from_user.id) + db.get_business_raw_materials(message.from_user.id)*100)
+            db.set_business_raw_materials(message.from_user.id, 0)
+            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Крупнейшая IT-компания\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
+        else:
+            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Крупнейшая IT-компания\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {1000 - Time + db.get_last_online(message.from_user.id) } секунд")
+
+
+
+@dp.message_handler(lambda message: message.text == "Купить сырьё на все деньги")
+async def buy_materials(message: types.Message):
+    balance = db.get_balance(message.from_user.id)
+    Time = time.time()
+    if db.get_business_id(message.from_user.id) == 1:
+        if db.get_business_raw_materials(message.from_user.id) == 100:
+            await message.answer(f"У тебя забит склад! Подожди пока склад освободится")
+        elif db.get_balance(message.from_user.id) >= 10000:
+            db.set_balance(message.from_user.id, balance - 10000)
+            db.set_last_online(message.from_user.id, Time)
+            db.set_business_raw_materials(message.from_user.id, 100)
+            await message.answer(f"Ты успешно купил сырьё!\nУ тебя на счету осталось {db.get_balance(message.from_user.id)}  рублей")
+        else:
+            await message.answer(f"У тебя не хватает средств :(")
+    elif db.get_business_id(message.from_user.id) == 2:
+        if db.get_business_raw_materials(message.from_user.id) == 300:
+            await message.answer(f"У тебя забит склад! Подожди пока склад освободится")
+        elif db.get_balance(message.from_user.id) >= 60000:
+            db.set_balance(message.from_user.id, balance - 60000)
+            db.set_last_online(message.from_user.id, Time)
+            db.set_business_raw_materials(message.from_user.id, 300)
+            await message.answer(f"Ты успешно купил сырьё!\nУ тебя на счету осталось {db.get_balance(message.from_user.id)}  рублей")
+        else:
+            await message.answer(f"У тебя не хватает средств :(")
+    else:
+        if db.get_business_raw_materials(message.from_user.id) == 1000:
+            await message.answer(f"У тебя забит склад! Подожди пока склад освободится")
+        elif db.get_balance(message.from_user.id) >= 500000:
+            db.set_balance(message.from_user.id, balance - 500000)
+            db.set_last_online(message.from_user.id, Time)
+            db.set_business_raw_materials(message.from_user.id, 1000)
+            await message.answer(f"Ты успешно купил сырьё!\nУ тебя на счету осталось {db.get_balance(message.from_user.id)}  рублей")
+        else:
+            await message.answer(f"У тебя не хватает средств :(")
     
 
 @dp.message_handler(lambda message: message.text == "Продать бизнес")
@@ -223,15 +295,20 @@ async def sell_business(message: types.Message):
     if db.get_business_id(message.from_user.id) == 1:
         db.set_business_id(message.from_user.id, -1)
         db.set_balance(message.from_user.id, balance + 0.75*100000)
+        db.set_business_raw_materials(message.from_user.id, 0)
         await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboard)
     elif db.get_business_id(message.from_user.id) == 2:
         db.set_business_id(message.from_user.id, -1)
         db.set_balance(message.from_user.id, balance + 0.75*5000000)
+        db.set_business_raw_materials(message.from_user.id, 0)
         await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboard)
     else:
+        db.set_business_raw_materials(message.from_user.id, 0)
         db.set_business_id(message.from_user.id, -1)
         db.set_balance(message.from_user.id, balance + 0.75*100000000)
         await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboard)
+
+
 
 
 @dp.message_handler(lambda message: message.text == "Работа")
@@ -253,8 +330,8 @@ async def teacher(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Приступить к работе")
 async def start_work(message: types.Message):
-    global task 
     task = generate_task()
+    db.set_work_answer(message.from_user.id, task[1])
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Пропустить задание", "Я устал, Босс"]
     keyboard.add(*buttons)
@@ -264,8 +341,8 @@ async def start_work(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Пропустить задание")
 async def skip_work(message: types.Message):
-    global task 
     task = generate_task()
+    db.set_work_answer(message.from_user.id, task[1])
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Пропустить задание", "Я устал, Босс"]
     keyboard.add(*buttons)
@@ -279,30 +356,17 @@ async def get_bet(message: types.Message, state: FSMContext):
     buttons = ["Пропустить задание", "Я устал, Босс"]
     keyboard.add(*buttons)
     balance = db.get_balance(message.from_user.id)
-    global task
     if message.text == "Пропустить задание":
         task = generate_task()
+        db.set_work_answer(message.from_user.id, task[1])
         await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
-    elif message.text.isdigit():
-        if task[1] == int(message.text):
-            task = generate_task()
-            db.set_balance(message.from_user.id, balance + 1000)
-            balance += 1000
-            await message.answer(f"Правильно! Ваш баланс: {balance} рублей", reply_markup=keyboard)
-            await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
-        else:
-            await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboard)
-    
-    elif message.text[0] == "-" and message.text[1:].isdigit():
-        if task[1] == int(message.text):
-            task = generate_task()
-            db.set_balance(message.from_user.id, balance + 1000)
-            balance += 1000
-            await message.answer(f"Правильно! Ваш баланс: {balance} рублей", reply_markup=keyboard)
-            await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
-        else:
-            await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboard)
-
+    elif str(db.get_work_answer(message.from_user.id)) == message.text:
+        task = generate_task()
+        db.set_work_answer(message.from_user.id, task[1])
+        db.set_balance(message.from_user.id, balance + 1000)
+        balance += 1000
+        await message.answer(f"Правильно! Ваш баланс: {balance} рублей", reply_markup=keyboard)
+        await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboard)
     elif message.text == "Я устал, Босс":
         await state.finish()
         keyboard = types.ReplyKeyboardMarkup()
@@ -310,7 +374,7 @@ async def get_bet(message: types.Message, state: FSMContext):
         keyboard.add(*buttons)
         await message.answer(f"Вы точно хотите уйти?", reply_markup=keyboard)
     else:
-        await message.answer(f"Решай задачу или иди отсюда, бездарь!", reply_markup=keyboard)
+        await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Магазин")
