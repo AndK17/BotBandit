@@ -72,7 +72,7 @@ def get_my_photo(user_id):
 async def cmd_start(message: types.Message):
     db.append_user(message.from_user.id)
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Бизнес", "Работа","Магазин","Казино"]
+    buttons = ["Бизнес", "Работа","Магазин","Казино", 'Лидербоард']
     keyboard.add(*buttons)
     balance = db.get_balance(message.from_user.id)
     photo = open(get_my_photo(message.from_user.id), 'rb')
@@ -83,13 +83,27 @@ async def cmd_start(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Выйти в главное меню")
 async def teacher(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
-    buttons = ["Бизнес", "Работа","Магазин","Казино"]
+    buttons = ["Бизнес", "Работа","Магазин","Казино", 'Лидербоард']
     keyboard.add(*buttons)
     balance = db.get_balance(message.from_user.id)
     photo = open(get_my_photo(message.from_user.id), 'rb')
     await bot.send_photo(message.from_user.id, photo, 
                          caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboard)
 
+
+@dp.message_handler(lambda message: message.text =='Лидербоард')
+async def business(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Бизнес", "Работа","Магазин","Казино", 'Лидербоард']
+    keyboard.add(*buttons)
+    msg = ''
+    c = 1
+    for i in db.get_liderboard():
+        usr = await bot.get_chat(i[0])
+        msg += f'{c}. {usr.username} - {i[1]}\n'
+        c += 1
+    await message.answer(msg, reply_markup=keyboard)
+    
 
 @dp.message_handler(lambda message: message.text == message.text in ["Бизнес", "Назад"])
 async def business(message: types.Message):
@@ -305,6 +319,49 @@ async def shop(message: types.Message):
     buttons = ['Обувь', 'Футболки', 'Шапки', 'Дома', "Выйти в главное меню"]
     keyboard.add(*buttons)
     await message.answer("Добро пожаловать в магазин!\nВыберите категорию товара", reply_markup=keyboard)
+
+@dp.message_handler(lambda message: message.text in ['Обувь', 'Футболки', 'Шапки', 'Дома'])
+async def shoes_shop(message: types.Message):
+    item_type = {'Обувь':'shoes',
+                 'Футболки':'tshort',
+                 'Шапки':'hat', 
+                 'Дома': 'house'}
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Выйти в главное меню"]
+    keyboard.add(*buttons)
+    items = db.get_shop_item_by_type(item_type[message.text])
+    await message.answer("В наличие имеются следующие товары:", reply_markup=keyboard)
+    for item in items:
+        buy_kb = InlineKeyboardMarkup(row_width=1)
+        buy_kb.add(InlineKeyboardButton(text='Купить', callback_data=f'buy{item[0]}'))
+        photo = open(f'shop_items/{item_type[message.text]}/{item[-1]}.png', 'rb')
+        await bot.send_photo(message.from_user.id, photo, 
+                         caption=f"{item[1]}. Цена: {item[-2]}", reply_markup=buy_kb)
+
+@dp.callback_query_handler(Text(startswith='buy'))
+async def buy_item(callback: types.CallbackQuery):
+    item_id = int(callback.data[3:])
+    item = db.get_shop_item(item_id)
+    user_balance = db.get_balance(callback.from_user.id)
+    if item[-2] > user_balance:
+        await callback.message.answer('У вас не достаточно средств')
+    else:
+        if item[2] == 'hat':
+            db.set_hat(callback.from_user.id, item_id)
+        elif item[2] == 'shoes':
+            db.set_shoes(callback.from_user.id, item_id)
+        elif item[2] == 'tshort':
+            db.set_tshort(callback.from_user.id, item_id)
+        else:
+            db.set_house(callback.from_user.id, item_id)
+
+        db.set_balance(callback.from_user.id, user_balance-item[-2])
+        photo = open(get_my_photo(callback.from_user.id), 'rb')
+        keyboard = types.ReplyKeyboardMarkup()
+        buttons = ["Бизнес", "Работа","Магазин","Казино", 'Лидербоард']
+        keyboard.add(*buttons)
+        await bot.send_photo(callback.from_user.id, photo, 
+                            caption=f"Покупка упешно совершена. У тебя на счету {user_balance-item[-2]} рублей", reply_markup=keyboard)
 
 @dp.message_handler(lambda message: message.text == "Казино")
 async def casino(message: types.Message):
