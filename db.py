@@ -12,7 +12,7 @@ class DB():
         self.conn = sq.connect(self.file_name)
         self.cursor = self.conn.cursor()
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS business(business_id INTEGER PRIMARY KEY, name TEXT, description TEXT, income INTEGER,
-                                                                    max_balance INTEGER, max_raw_materials INTEGER);''')
+                                                                    max_balance INTEGER, max_raw_materials INTEGER, price INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS shop(item_id INTEGER PRIMARY KEY, name TEXT, item_type TEXT, price INTEGER, photo_id INTEGER);''')
         # self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_photos(items_combination TEXT PRIMARY KEY, photo_id INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, 
@@ -109,6 +109,14 @@ class DB():
     def get_last_online(self, user_id):
         self.cursor.execute(f"SELECT last_online FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
+    
+    def get_business_by_name(self, business_name):
+        self.cursor.execute(f"SELECT * FROM business WHERE name = {business_name}")
+        return self.cursor.fetchone()
+    
+    def get_businesses(self):
+        self.cursor.execute(f"SELECT * FROM business")
+        return self.cursor.fetchall()
     
     def get_business_balance(self, user_id):
         self.cursor.execute(f"SELECT business_balance FROM users WHERE user_id = {user_id}")
