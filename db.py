@@ -134,6 +134,10 @@ class DB():
         self.cursor.execute(f"SELECT * FROM users ORDER BY balance DESC")
         return self.cursor.fetchall()[:10]
     
+    def get_random_user(self, my_id):
+        self.cursor.execute(f"SELECT * FROM users WHERE business_balance > 0 AND user_id <> {my_id} AND business_id <> -1 ORDER BY RANDOM()")
+        return self.cursor.fetchone()
+    
      
     def delete_user(self, user_id):
         self.cursor.execute(f"DELETE FROM users WHERE user_id = {user_id}")
