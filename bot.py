@@ -121,7 +121,7 @@ async def business_doner_kebab(message: types.Message):
 
 
 @dp.message_handler(lambda message: message.text == "Завод пива")
-async def business_doner_kebab(message: types.Message):
+async def business_factory(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Купить \"Завод пива\"", "Назад"]
     keyboard.add(*buttons)
@@ -129,7 +129,7 @@ async def business_doner_kebab(message: types.Message):
 
 
 @dp.message_handler(lambda message: message.text == "Крупнейшая IT-компания")
-async def business_doner_kebab(message: types.Message):
+async def business_IT(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
     buttons = ["Купить \"Крупнейшая IT-компания\"", "Назад"]
     keyboard.add(*buttons)
@@ -137,7 +137,7 @@ async def business_doner_kebab(message: types.Message):
 
 
 @dp.message_handler(lambda message: message.text == "Купить \"Шаурмичную\"")
-async def business_doner_kebab(message: types.Message):
+async def buy_business_doner_kebab(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     if balance >= 100000:
         db.set_balance(message.from_user.id, balance - 100000)
@@ -148,7 +148,7 @@ async def business_doner_kebab(message: types.Message):
 
 
 @dp.message_handler(lambda message: message.text == "Купить \"Завод пива\"")
-async def business_factory(message: types.Message):
+async def buy_business_factory(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     if balance >= 5000000:
         db.set_balance(message.from_user.id, balance - 5000000)
@@ -159,7 +159,7 @@ async def business_factory(message: types.Message):
 
 
 @dp.message_handler(lambda message: message.text == "Купить \"Крупнейшая IT-компания\"")
-async def business_IT(message: types.Message):
+async def buy_business_IT(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     if balance >= 100000000:
         db.set_balance(message.from_user.id, balance - 100000000)
