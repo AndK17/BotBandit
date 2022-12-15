@@ -38,7 +38,7 @@ class DB():
         self.conn.commit()
 
     def set_business_id(self, user_id, business_id):
-        self.cursor.execute(f'UPDATE users SET business_id = "{business_id}" WHERE user_id = {user_id}')
+        self.cursor.execute(f'UPDATE users SET business_id = "{business_id}", business_balance=0, business_raw_materials=0 WHERE user_id = {user_id}')
         self.conn.commit()
 
     def set_shoes(self, user_id, shoes):
@@ -112,6 +112,10 @@ class DB():
     
     def get_business_by_name(self, business_name):
         self.cursor.execute(f"SELECT * FROM business WHERE name = {business_name}")
+        return self.cursor.fetchone()
+    
+    def get_business_by_id(self, business_id):
+        self.cursor.execute(f"SELECT * FROM business WHERE business_id = {business_id}")
         return self.cursor.fetchone()
     
     def get_businesses(self):
