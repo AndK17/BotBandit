@@ -19,11 +19,11 @@ class DB():
                                                      business_id INTEGER, shoes INTEGER, tshort INTEGER,
                                                      hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER, last_online timestamp,
                                                      business_balance INTEGER, business_raw_materials INTEGER,
-                                                     FOREIGN KEY (business_id) REFERENCES business (business_id)
-                                                     FOREIGN KEY (shoes) REFERENCES shop (item_id),
-                                                     FOREIGN KEY (tshort) REFERENCES shop (item_id),
-                                                     FOREIGN KEY (hat) REFERENCES shop (item_id),
-                                                     FOREIGN KEY (house) REFERENCES shop (item_id));''')
+                                                     FOREIGN KEY (business_id) REFERENCES business (business_id) ON DELETE SET NULL,
+                                                     FOREIGN KEY (shoes) REFERENCES shop (item_id) ON DELETE SET NULL,
+                                                     FOREIGN KEY (tshort) REFERENCES shop (item_id) ON DELETE SET NULL,
+                                                     FOREIGN KEY (hat) REFERENCES shop (item_id) ON DELETE SET NULL,
+                                                     FOREIGN KEY (house) REFERENCES shop (item_id) ON DELETE SET NULL);''')
         self.conn.commit()
 
 

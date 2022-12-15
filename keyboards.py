@@ -19,6 +19,9 @@ casion_keyboard.add(*["Изменить ставку", "Красное", "Чер
 shop_keyboard = ReplyKeyboardMarkup()
 shop_keyboard.add(*['Обувь', 'Футболки', 'Шапки', 'Дома', "Выйти в главное меню"])
 
+businesses_keyboard = ReplyKeyboardMarkup()
+businesses_keyboard.add(*["Шаурмичная", "Завод пива", "Крупнейшая IT-компания"])
+
 start_work_keyboard = ReplyKeyboardMarkup()
 start_work_keyboard.add(*["Приступить к работе", "Выйти в главное меню"])
 
