@@ -29,7 +29,10 @@ work_types_keyboard = ReplyKeyboardMarkup()
 work_types_keyboard.add(*["Препод по линалу"])
 
 business_manage_keyboard = ReplyKeyboardMarkup()
-business_manage_keyboard.add(*["Продать бизнес", "Информация о бизнесе","Купить сырьё на все деньги","Вывести деньги", "Назад"])
+business_manage_keyboard.add(*["Продать бизнес", "Информация о бизнесе","Купить сырьё на все деньги","Вывести деньги", "Напасть на чужой бизнес", "Назад"])
 
 sell_business_keyboard = ReplyKeyboardMarkup()
 sell_business_keyboard.add(*["Да, я хочу продать свой бизнес", "Нет, я передумал"])
+
+attack_business_keyboard = ReplyKeyboardMarkup()
+attack_business_keyboard.add(*["Выстрелить"])
