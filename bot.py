@@ -32,7 +32,6 @@ class FSMWork(StatesGroup):
 class FSMTransaction(StatesGroup):
     get_id = State()
     get_amount = State()
-    transaction = State()
 
 def get_my_photo(user_id):
     user = db.get_user(user_id)
@@ -71,64 +70,64 @@ def get_my_photo(user_id):
     return f"shop_items/result/{house_id}_{shoes_id}_{tshort_id}_{hat_id}.png"
 
 
+@dp.message_handler(lambda message: message.text == "Выйти в главное меню")
+async def main_menu(message: types.Message):
+    balance = db.get_balance(message.from_user.id)
+    photo = open(get_my_photo(message.from_user.id), 'rb')
+    await bot.send_photo(message.from_user.id, photo, 
+                         caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
+    
+    
 @dp.message_handler(commands = "start")
 async def cmd_start(message: types.Message):
     db.append_user(message.from_user.id)
-    balance = db.get_balance(message.from_user.id)
-    photo = open(get_my_photo(message.from_user.id), 'rb')
-    await bot.send_photo(message.from_user.id, photo, 
-                         caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
+    main_menu(message)
 
-
-@dp.message_handler(lambda message: message.text == "Выйти в главное меню")
-async def teacher(message: types.Message):
-    await FSMTransaction.finish()
-    balance = db.get_balance(message.from_user.id)
-    photo = open(get_my_photo(message.from_user.id), 'rb')
-    await bot.send_photo(message.from_user.id, photo, 
-                         caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
 
 @dp.message_handler(lambda message: message.text == "Получить мой id")
-async def teacher(message: types.Message):
+async def get_my_id(message: types.Message):
     await message.answer(message.from_user.id)
 
 @dp.message_handler(lambda message: message.text == "Перевести другу")
-async def teacher(message: types.Message):
+async def transact_to_friend(message: types.Message):
     await FSMTransaction.get_id.set()
     await message.answer('Введи id друга, он может его получить в главном меню', reply_markup=keyboards.back_keyboard)
 
 @dp.message_handler(lambda message: message.text == "Выйти в главное меню", state=FSMTransaction.all_states)
-async def teacher(message: types.Message, state: FSMContext):
+async def out_fsm(message: types.Message, state: FSMContext):
     await state.finish()
-    balance = db.get_balance(message.from_user.id)
-    photo = open(get_my_photo(message.from_user.id), 'rb')
-    await bot.send_photo(message.from_user.id, photo,
-                        caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
+    await main_menu(message)
             
 @dp.message_handler(content_types=["text"], state=FSMTransaction.get_id)
-async def teacher(message: types.Message, state: FSMContext):
+async def input_id(message: types.Message, state: FSMContext):
     if message.text.isdigit() == False:
-        if message.text == "Выйти в главное меню":
-            await state.finish()
-            balance = db.get_balance(message.from_user.id)
-            photo = open(get_my_photo(message.from_user.id), 'rb')
-            await bot.send_photo(message.from_user.id, photo,
-                                caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
-        await message.answer('Пользователем с таким id не найден. Попробуйте еще раз')
+        await message.answer('Id болжен быть натуральное число')
     else:
         user = db.get_user(message.text)
-        print(user)
         if user == None:
             await message.answer('Пользователем с таким id не найден. Попробуйте еще раз')
         else:
+            async with state.proxy() as data:
+                data['to_user'] = int(message.text)
             await FSMTransaction.get_amount.set()
             await message.answer('Сколько ты хочешь перевести?')
 
 @dp.message_handler(state=FSMTransaction.get_amount)
-async def teacher(message: types.Message):
+async def input_amount(message: types.Message, state: FSMContext):
     if message.text.isdigit() == True:
-        await FSMTransaction.get_amount.set()
-        await message.answer('Сколько ты хочешь перевести?')
+        balance = db.get_balance(message.from_user.id)
+        if int(message.text) > balance:
+            await message.answer(f'У вас недостаточно средств. Ваш баланс {balance}')
+        else:
+            async with state.proxy() as data:
+                db.set_balance(data['to_user'], db.get_balance(data['to_user'])+int(message.text))
+                db.set_balance(message.from_user.id, db.get_balance(message.from_user.id)-int(message.text))
+                
+            await message.answer(f'Средства успено переведены')
+            await state.finish()
+            await main_menu(message)
+    else:
+        await message.answer('Введите натуральное число')
     
 @dp.message_handler(lambda message: message.text =='Лидербоард')
 async def business(message: types.Message):
