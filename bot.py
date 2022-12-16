@@ -22,8 +22,6 @@ dp = Dispatcher(bot, storage=storage)
 
 db = DB()
 
-task = 0
-
 
 class FSMBet(StatesGroup):
     bet = State()
@@ -31,6 +29,10 @@ class FSMBet(StatesGroup):
 class FSMWork(StatesGroup):
     task = State()
 
+class FSMTransaction(StatesGroup):
+    get_id = State()
+    get_amount = State()
+    transaction = State()
 
 def get_my_photo(user_id):
     user = db.get_user(user_id)
@@ -80,12 +82,64 @@ async def cmd_start(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Выйти в главное меню")
 async def teacher(message: types.Message):
+    await FSMTransaction.finish()
     balance = db.get_balance(message.from_user.id)
     photo = open(get_my_photo(message.from_user.id), 'rb')
     await bot.send_photo(message.from_user.id, photo, 
                          caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
 
+@dp.message_handler(lambda message: message.text == "Получить мой id")
+async def teacher(message: types.Message):
+    await message.answer(message.from_user.id)
 
+@dp.message_handler(lambda message: message.text == "Перевести другу")
+async def teacher(message: types.Message):
+    await FSMTransaction.get_id.set()
+    await message.answer('Введи id друга, он может его получить в главном меню', reply_markup=keyboards.back_keyboard)
+
+@dp.message_handler(lambda message: message.text == "Перевести другу", state=FSMTransaction.all_states)
+async def teacher(message: types.Message, state: FSMContext):
+    if message.text.isdigit() == False:
+        if message.text == "Выйти в главное меню":
+            await state.finish()
+            balance = db.get_balance(message.from_user.id)
+            photo = open(get_my_photo(message.from_user.id), 'rb')
+            await bot.send_photo(message.from_user.id, photo,
+                                caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
+        await message.answer('Пользователем с таким id не найден. Попробуйте еще раз')
+    else:
+        user = db.get_user(message.text)
+        print(user)
+        if user == None:
+            await message.answer('Пользователем с таким id не найден. Попробуйте еще раз')
+        else:
+            await FSMTransaction.get_amount.set()
+            await message.answer('Сколько ты хочешь перевести?')
+            
+@dp.message_handler(content_types=["text"], state=FSMTransaction.get_id)
+async def teacher(message: types.Message, state: FSMContext):
+    if message.text.isdigit() == False:
+        if message.text == "Выйти в главное меню":
+            await state.finish()
+            balance = db.get_balance(message.from_user.id)
+            photo = open(get_my_photo(message.from_user.id), 'rb')
+            await bot.send_photo(message.from_user.id, photo,
+                                caption=f"Ты в главном меню, {str(message.chat.first_name)}. У тебя на счету {balance} рублей", reply_markup=keyboards.main_keyboard)
+        await message.answer('Пользователем с таким id не найден. Попробуйте еще раз')
+    else:
+        user = db.get_user(message.text)
+        print(user)
+        if user == None:
+            await message.answer('Пользователем с таким id не найден. Попробуйте еще раз')
+        else:
+            await FSMTransaction.get_amount.set()
+            await message.answer('Сколько ты хочешь перевести?')
+
+@dp.message_handler(state=FSMTransaction.get_amount)
+async def teacher(message: types.Message):
+    await FSMTransaction.get_amount.set()
+    await message.answer('Сколько ты хочешь перевести?')
+    
 @dp.message_handler(lambda message: message.text =='Лидербоард')
 async def business(message: types.Message):
     msg = ''
@@ -199,23 +253,23 @@ async def business_info(message: types.Message):
         if Time - db.get_last_online(message.from_user.id) >= 100:
             db.set_business_balance(message.from_user.id, db.get_business_balance(message.from_user.id) + db.get_business_raw_materials(message.from_user.id)*100)
             db.set_business_raw_materials(message.from_user.id, 0)
-            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Шаурмичная\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
+            await message.answer(f"Информация о твоём бизнесе\nБизнес: Шаурмичная\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
         else:
-            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Шаурмичная\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {100 - Time + db.get_last_online(message.from_user.id) } секунд")
+            await message.answer(f"Информация о твоём бизнесе\nБизнес: Шаурмичная\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {round(100 - Time + db.get_last_online(message.from_user.id))} секунд")
     elif db.get_business_id(message.from_user.id) == 2:
         if Time - db.get_last_online(message.from_user.id) >= 300:
             db.set_business_balance(message.from_user.id, db.get_business_balance(message.from_user.id) + db.get_business_raw_materials(message.from_user.id)*100)
             db.set_business_raw_materials(message.from_user.id, 0)
-            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Завод пива\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
+            await message.answer(f"Информация о твоём бизнесе\nБизнес: Завод пива\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
         else:
-            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Завод пива\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {300 - Time + db.get_last_online(message.from_user.id) } секунд")
+            await message.answer(f"Информация о твоём бизнесе\nБизнес: Завод пива\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {round(300 - Time + db.get_last_online(message.from_user.id))} секунд")
     else:
         if Time - db.get_last_online(message.from_user.id) >= 1000:
             db.set_business_balance(message.from_user.id, db.get_business_balance(message.from_user.id) + db.get_business_raw_materials(message.from_user.id)*100)
             db.set_business_raw_materials(message.from_user.id, 0)
-            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Крупнейшая IT-компания\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
+            await message.answer(f"Информация о твоём бизнесе\nБизнес: Крупнейшая IT-компания\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}")
         else:
-            await message.answer(f"Ифнормация о твоём бизнесе\nБизнес: Крупнейшая IT-компания\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {1000 - Time + db.get_last_online(message.from_user.id) } секунд")
+            await message.answer(f"Информация о твоём бизнесе\nБизнес: Крупнейшая IT-компания\nБаланс бизнеса: {db.get_business_balance(message.from_user.id)}\nЗанятых мест на складе: {db.get_business_raw_materials(message.from_user.id)}\nДо получения прибыли осталось {round(1000 - Time + db.get_last_online(message.from_user.id))} секунд")
 
 
 
@@ -253,7 +307,19 @@ async def buy_materials(message: types.Message):
             await message.answer(f"Ты успешно купил сырьё!\nУ тебя на счету осталось {db.get_balance(message.from_user.id)}  рублей")
         else:
             await message.answer(f"У тебя не хватает средств :(")
-    
+
+@dp.message_handler(lambda message: message.text == "Напасть на чужой бизнес")
+async def attack_business(message: types.Message):
+    await message.answer(f"Твоя задача устранить охранника.\nУ тебя будет только одна попытка, сосредоточься! ", reply_markup=keyboards.attack_business_keyboard)
+
+@dp.message_handler(lambda message: message.text == "Выстрелить")
+async def attack_business(message: types.Message):
+    aim = db.get_random_user(message.from_user.id)
+    user = await bot.get_chat(aim[0])
+    db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) + round(db.get_business_balance(aim[0])*0.05))
+    db.set_business_balance(aim[0], round(db.get_business_balance(aim[0])*0.95))
+    await message.answer(f"Ты успешно атаковал бизнес игрока {user.username}!\nТы заработал {round(db.get_business_balance(aim[0])*0.05)} рублей",  reply_markup=keyboards.business_manage_keyboard)
+
 
 @dp.message_handler(lambda message: message.text == "Продать бизнес")
 async def sell_business(message: types.Message):
@@ -264,19 +330,21 @@ async def sell_business(message: types.Message):
 async def sell_business(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     if db.get_business_id(message.from_user.id) == 1:
+        db.set_balance(message.from_user.id, balance + 0.75*100000 + db.get_business_balance(message.from_user.id))
+        db.set_business_raw_materials(message.from_user.id, 0)
         db.set_business_id(message.from_user.id, -1)
-        db.set_balance(message.from_user.id, balance + 0.75*100000)
         await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\n"
                             f"У тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboards.business_keyboard)
     elif db.get_business_id(message.from_user.id) == 2:
+        db.set_balance(message.from_user.id, balance + 0.75*5000000 + db.get_business_balance(message.from_user.id))
+        db.set_business_raw_materials(message.from_user.id, 0)
         db.set_business_id(message.from_user.id, -1)
-        db.set_balance(message.from_user.id, balance + 0.75*5000000)
         await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\n"
                             f"У тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboards.business_keyboard)
     else:
+        db.set_balance(message.from_user.id, balance + 0.75*100000000 + db.get_business_balance(message.from_user.id))
         db.set_business_raw_materials(message.from_user.id, 0)
         db.set_business_id(message.from_user.id, -1)
-        db.set_balance(message.from_user.id, balance + 0.75*100000000)
         await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\n"
                             f"У тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboards.business_keyboard)
 

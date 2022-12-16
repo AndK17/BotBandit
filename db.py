@@ -14,11 +14,11 @@ class DB():
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS business(business_id INTEGER PRIMARY KEY, name TEXT, description TEXT, income INTEGER,
                                                                     max_balance INTEGER, max_raw_materials INTEGER, price INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS shop(item_id INTEGER PRIMARY KEY, name TEXT, item_type TEXT, price INTEGER, photo_id INTEGER);''')
-        # self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_photos(items_combination TEXT PRIMARY KEY, photo_id INTEGER);''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS users(user_id INTEGER PRIMARY KEY, balance INTEGER, 
                                                      business_id INTEGER, shoes INTEGER, tshort INTEGER,
                                                      hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER, last_online timestamp,
-                                                     business_balance INTEGER, business_raw_materials INTEGER,
+                                                     business_balance INTEGER, business_raw_materials INTEGER, 
+                                                     start_work_time timestamp, done_work_count INTEGER, avagage_work_time INTEGER,
                                                      FOREIGN KEY (business_id) REFERENCES business (business_id) ON DELETE SET NULL,
                                                      FOREIGN KEY (shoes) REFERENCES shop (item_id) ON DELETE SET NULL,
                                                      FOREIGN KEY (tshort) REFERENCES shop (item_id) ON DELETE SET NULL,
@@ -28,8 +28,8 @@ class DB():
 
 
     def append_user(self, user_id):
-        data = (user_id, 0, -1, -1, -1, -1, -1, 100, None, 0, 0)
-        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?);", data)
+        data = (user_id, 0, -1, -1, -1, -1, -1, 100, None, 0, 0, None, -1, 0)
+        self.cursor.execute("INSERT OR IGNORE INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?, ?, ?, ?);", data)
         self.conn.commit()
         
         
@@ -77,6 +77,17 @@ class DB():
         self.cursor.execute(f'UPDATE users SET business_raw_materials = "{business_raw_materials}" WHERE user_id = {user_id}')
         self.conn.commit()
     
+    def get_start_work_time(self, user_id, get_start_work_time):
+        self.cursor.execute(f'UPDATE users SET get_start_work_time = "{get_start_work_time}" WHERE user_id = {user_id}')
+        self.conn.commit()
+        
+    def set_done_work_count(self, user_id, done_work_count):
+        self.cursor.execute(f'UPDATE users SET done_work_count = "{done_work_count}" WHERE user_id = {user_id}')
+        self.conn.commit()
+        
+    def set_avarage_work_time(self, user_id, avarage_work_time):
+        self.cursor.execute(f'UPDATE users SET avarage_work_time = "{avarage_work_time}" WHERE user_id = {user_id}')
+        self.conn.commit()
 
     def get_user(self, user_id):
         self.cursor.execute(f"SELECT * FROM users WHERE user_id = {user_id}")
@@ -137,6 +148,18 @@ class DB():
     def get_random_user(self, my_id):
         self.cursor.execute(f"SELECT * FROM users WHERE business_balance > 0 AND user_id <> {my_id} AND business_id <> -1 ORDER BY RANDOM()")
         return self.cursor.fetchone()
+    
+    def get_start_work_time(self, user_id):
+        self.cursor.execute(f"SELECT start_work_time FROM users WHERE user_id = {user_id}")
+        return self.cursor.fetchone()[0]
+    
+    def get_done_work_count(self, user_id):
+        self.cursor.execute(f"SELECT done_work_count FROM users WHERE user_id = {user_id}")
+        return self.cursor.fetchone()[0]
+    
+    def get_avagage_work_time(self, user_id):
+        self.cursor.execute(f"SELECT avarage_work_time FROM users WHERE user_id = {user_id}")
+        return self.cursor.fetchone()[0]
     
      
     def delete_user(self, user_id):
