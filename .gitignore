@@ -5,5 +5,4 @@ config.py
 bot_bandit.db
 shop_items/references
 test.py
-/tests
 test.py

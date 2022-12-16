@@ -18,7 +18,7 @@ class DB():
                                                      business_id INTEGER, shoes INTEGER, tshort INTEGER,
                                                      hat INTEGER, house INTEGER, bet INTEGER, work_answer INTEGER, last_online timestamp,
                                                      business_balance INTEGER, business_raw_materials INTEGER, 
-                                                     start_work_time timestamp, done_work_count INTEGER, avagage_work_time INTEGER,
+                                                     start_work_time timestamp, done_work_count INTEGER, avragage_work_time INTEGER,
                                                      FOREIGN KEY (business_id) REFERENCES business (business_id) ON DELETE SET NULL,
                                                      FOREIGN KEY (shoes) REFERENCES shop (item_id) ON DELETE SET NULL,
                                                      FOREIGN KEY (tshort) REFERENCES shop (item_id) ON DELETE SET NULL,
@@ -157,7 +157,7 @@ class DB():
         self.cursor.execute(f"SELECT done_work_count FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
     
-    def get_avagage_work_time(self, user_id):
+    def get_avragage_work_time(self, user_id):
         self.cursor.execute(f"SELECT avarage_work_time FROM users WHERE user_id = {user_id}")
         return self.cursor.fetchone()[0]
     
