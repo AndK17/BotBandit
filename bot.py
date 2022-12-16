@@ -28,7 +28,7 @@ class FSMBet(StatesGroup):
 
 class FSMWork(StatesGroup):
     task = State()
-
+    
 class FSMTransaction(StatesGroup):
     get_id = State()
     get_amount = State()
@@ -81,7 +81,7 @@ async def main_menu(message: types.Message):
 @dp.message_handler(commands = "start")
 async def cmd_start(message: types.Message):
     db.append_user(message.from_user.id)
-    main_menu(message)
+    await main_menu(message)
 
 
 @dp.message_handler(lambda message: message.text == "Получить мой id")
@@ -297,17 +297,22 @@ async def buy_materials(message: types.Message):
         else:
             await message.answer(f"У тебя не хватает средств :(")
 
+
 @dp.message_handler(lambda message: message.text == "Напасть на чужой бизнес")
 async def attack_business(message: types.Message):
-    await message.answer(f"Твоя задача устранить охранника.\nУ тебя будет только одна попытка, сосредоточься! ", reply_markup=keyboards.attack_business_keyboard)
+    await message.answer(f"Выбери откуда хочешь напасть:", reply_markup=keyboards.attack_business_keyboard)
+    
 
-@dp.message_handler(lambda message: message.text == "Выстрелить")
-async def attack_business(message: types.Message):
-    aim = db.get_random_user(message.from_user.id)
-    user = await bot.get_chat(aim[0])
-    db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) + round(db.get_business_balance(aim[0])*0.05))
-    db.set_business_balance(aim[0], round(db.get_business_balance(aim[0])*0.95))
-    await message.answer(f"Ты успешно атаковал бизнес игрока {user.username}!\nТы заработал {round(db.get_business_balance(aim[0])*0.05)} рублей",  reply_markup=keyboards.business_manage_keyboard)
+@dp.message_handler(lambda message: message.text in ["Зайти с черного хода", "Высадиться на крышу"])
+async def shoot(message: types.Message):
+    if randint(1, 3) == 1:
+        aim = db.get_random_user(message.from_user.id)
+        user = await bot.get_chat(aim[0])
+        db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) + round(db.get_business_balance(aim[0])*0.05))
+        db.set_business_balance(aim[0], round(db.get_business_balance(aim[0])*0.95))
+        await message.answer(f"Ты успешно атаковал бизнес игрока {user.username}!\nТы заработал {round(db.get_business_balance(aim[0])*0.05)} рублей",  reply_markup=keyboards.business_manage_keyboard)
+    else:
+        await message.answer(f"Задание провалено!\nРасходы на операцию составили {100} рублей",  reply_markup=keyboards.business_manage_keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Продать бизнес")
@@ -316,7 +321,7 @@ async def sell_business(message: types.Message):
 
 
 @dp.message_handler(lambda message: message.text == "Да, я хочу продать свой бизнес")
-async def sell_business(message: types.Message):
+async def sell_business1(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     if db.get_business_id(message.from_user.id) == 1:
         db.set_balance(message.from_user.id, balance + 0.75*100000 + db.get_business_balance(message.from_user.id))
@@ -336,8 +341,6 @@ async def sell_business(message: types.Message):
         db.set_business_id(message.from_user.id, -1)
         await message.answer(f"Привет, {str(message.chat.first_name)}!\nТы находишься в меню управления бизнесом.\n"
                             f"У тебя на счету {db.get_balance(message.from_user.id)} рублей.", reply_markup=keyboards.business_keyboard)
-
-
 
 
 @dp.message_handler(lambda message: message.text == "Работа")

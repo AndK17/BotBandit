@@ -9,6 +9,7 @@ class DB():
 
 
     def connect(self):
+        """Пдключение к базе данных и создание необходимых таблиц"""
         self.conn = sq.connect(self.file_name)
         self.cursor = self.conn.cursor()
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS business(business_id INTEGER PRIMARY KEY, name TEXT, description TEXT, income INTEGER,
@@ -164,4 +165,10 @@ class DB():
      
     def delete_user(self, user_id):
         self.cursor.execute(f"DELETE FROM users WHERE user_id = {user_id}")
+        self.conn.commit()
+        
+    def clear(self):
+        self.cursor.execute(f'DELETE FROM users')
+        self.cursor.execute(f'DELETE FROM shop')
+        self.cursor.execute(f'DELETE FROM business')
         self.conn.commit()

@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReplyKeyboardMarkup
 
 main_keyboard = ReplyKeyboardMarkup()
 main_keyboard.add(*["Бизнес", "Работа","Магазин","Казино", 'Лидербоард', 'Получить мой id', 'Перевести другу'])
@@ -35,4 +35,4 @@ sell_business_keyboard = ReplyKeyboardMarkup()
 sell_business_keyboard.add(*["Да, я хочу продать свой бизнес", "Нет, я передумал"])
 
 attack_business_keyboard = ReplyKeyboardMarkup()
-attack_business_keyboard.add(*["Выстрелить"])
+attack_business_keyboard.add(*["Зайти с черного хода", "Высадиться на крышу"])

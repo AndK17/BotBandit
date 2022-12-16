@@ -5,4 +5,5 @@ config.py
 bot_bandit.db
 shop_items/references
 test.py
-test.py
+/.pytest_cache
+/tests/__pycache__
