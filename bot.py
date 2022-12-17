@@ -148,6 +148,11 @@ async def business(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Купить бизнес")
 async def business(message: types.Message):
+    """Вывод списка бизнесов, которые доступны
+
+    Args:
+        message (types.Message): объект сообщения пользователя
+    """
     business = db.get_business_id(message.from_user.id)
     if business in [-1, None]:
         await message.answer(f"Какой бизнес хочешь купить?", reply_markup=keyboards.businesses_keyboard)
@@ -228,6 +233,11 @@ async def lead(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Вывести деньги")
 async def take_money(message: types.Message):
+    """Перевод денег с баланса бизнеса на баланс игрока
+
+    Args:
+        message (types.Message): объект сообщения пользователя
+    """
     if db.get_business_balance(message.from_user.id) > 0:
         db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) + db.get_business_balance(message.from_user.id))
         await message.answer(f"Тебе на счёт поступило {db.get_business_balance(message.from_user.id)} рублей.\nУ тебя на счету {db.get_balance(message.from_user.id)} рублей")
@@ -449,6 +459,11 @@ async def buy_item(callback: types.CallbackQuery):
 
 @dp.message_handler(lambda message: message.text == "Казино")
 async def roulette(message: types.Message):
+    """Вывод приветственного сообщения казино
+
+    Args:
+        message (types.Message): сообщение пользователя
+    """
     bet = db.get_bet(message.from_user.id)
     balance = db.get_balance(message.from_user.id)
     await message.answer(f"Ваш баланс: {balance} рублей\nВаша ставка: {bet} рублей", reply_markup=keyboards.casion_keyboard)
@@ -462,6 +477,12 @@ async def change_bet(message: types.Message):
 
 @dp.message_handler(content_types=["text"], state=FSMBet.bet)
 async def get_bet(message: types.Message, state: FSMContext):
+    """Получение новой ставки и ее установка если достаточно денег
+
+    Args:
+        message (types.Message): объект сообщения
+        state (FSMContext): состояние
+    """
     balance = db.get_balance(message.from_user.id)
     if message.text.isdigit():
         bet = int(message.text)
