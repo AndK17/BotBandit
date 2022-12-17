@@ -17,7 +17,7 @@ def test_add_user():
     user_id = 1
     
     db.append_user(user_id)
-    assert db.conn.execute('SELECT * FROM users').fetchall() == [(1, 0, -1, -1, -1, -1, -1, 100, None, str(datetime.now(timezone.utc).replace(microsecond=0))[:-6], 0, 0, None, -1, 0)]
+    assert db.conn.execute('SELECT * FROM users').fetchall() == [(1, 0, -1, -1, -1, -1, -1, 100, None, str(datetime.now(timezone.utc).replace(microsecond=0))[:-6], 0, 0, None, 0, 0)]
     
     db.set_balance(user_id, 100)
     assert db.conn.execute(f'SELECT balance FROM users WHERE user_id = {user_id}').fetchall() == [(100,)]

@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock
-from bot import business_doner_kebab, shop, attack_business, sell_business, work
+from bot import business_doner_kebab, shop, sell_business, work, business_IT, business_factory
 from aiogram import types
 import keyboards
 
@@ -15,22 +15,36 @@ async def test_start_handler():
     keyboard.add(*buttons)
     
     message.answer.assert_called_with(f"Маленькая шаурмичная на окраине Москвы.\nСТОИМОСТЬ: 100000 рублей", reply_markup=keyboard)
+
+@pytest.mark.asyncio
+async def test_business_IT():
+    message = AsyncMock()
+    await business_IT(message)
+    
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить \"Крупнейшая IT-компания\"", "Назад"]
+    keyboard.add(*buttons)
+    
+    message.answer.assert_called_with(f"Крупнейшая IT-компания основанная в Москве.\nСТОИМОСТЬ: 100000000 рублей", reply_markup=keyboard)
+    
+@pytest.mark.asyncio
+async def test_business_factory():
+    message = AsyncMock()
+    await business_factory(message)
+    
+    keyboard = types.ReplyKeyboardMarkup()
+    buttons = ["Купить \"Завод пива\"", "Назад"]
+    keyboard.add(*buttons)
+    
+    message.answer.assert_called_with(f"Завод пива в Подмосковье.\nСТОИМОСТЬ: 5000000 рублей", reply_markup=keyboard) 
     
     
 @pytest.mark.asyncio
 async def test_shop_handler():
-    message = AsyncMock(text = AsyncMock())
+    message = AsyncMock()
     await shop(message)
     
     message.answer.assert_called_with("Добро пожаловать в магазин!\nВыберите категорию товара", reply_markup=keyboards.shop_keyboard)
-
-
-@pytest.mark.asyncio
-async def test_attack_business():
-    message = AsyncMock()
-    await attack_business(message)
-    
-    message.answer.assert_called_with("Выбери откуда хочешь напасть:", reply_markup=keyboards.attack_business_keyboard)
     
     
 @pytest.mark.asyncio
