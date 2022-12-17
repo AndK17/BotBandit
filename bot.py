@@ -300,7 +300,7 @@ async def buy_materials(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Напасть на чужой бизнес")
 async def attack_business(message: types.Message):
-    if db.get_balance(message.from_user.id) >= 100:
+    if db.get_balance(message.from_user.id) >= 1000:
         await message.answer(f"Выбери откуда хочешь напасть:", reply_markup=keyboards.attack_business_keyboard)
     else:
         await message.answer(f"У тебя не хватает денег, на проведение операции")
@@ -315,8 +315,8 @@ async def shoot(message: types.Message):
         db.set_business_balance(aim[0], round(db.get_business_balance(aim[0])*0.95))
         await message.answer(f"Ты успешно атаковал бизнес игрока {user.username}!\nТы заработал {round(db.get_business_balance(aim[0])*0.05)} рублей",  reply_markup=keyboards.business_manage_keyboard)
     else:
-        db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) - 100)
-        await message.answer(f"Задание провалено!\nРасходы на операцию составили {100} рублей",  reply_markup=keyboards.business_manage_keyboard)
+        db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) - 1000)
+        await message.answer(f"Задание провалено!\nРасходы на операцию составили {1000} рублей",  reply_markup=keyboards.business_manage_keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Продать бизнес")
@@ -356,7 +356,7 @@ async def work(message: types.Message):
 async def teacher(message: types.Message):
     balance = db.get_balance(message.from_user.id)
     await message.answer(f"Привет, твоя задача считать опредеители матриц, справишься?"
-                         f"За каждую правильно решённую задачу будешь получать по 1000 рублей. Твой баланс: {balance} рублей", reply_markup=keyboards.start_work_keyboard)
+                         f"\nЗа каждую правильно решённую задачу будешь получать от 1000 до 2000 рублей,\nвсё будет завистеть от того, насколько быстро ты выполняешь задания. Твой баланс: {balance} рублей", reply_markup=keyboards.start_work_keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Приступить к работе")
@@ -457,7 +457,7 @@ async def roulette(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Изменить ставку")
 async def change_bet(message: types.Message):
     await FSMBet.bet.set()
-    await message.answer("Введите ставку (натуральное число):", reply_markup=keyboards.back_keyboard)
+    await message.answer("Введите ставку (до 100000 рублей):", reply_markup=keyboards.back_keyboard)
 
 
 @dp.message_handler(content_types=["text"], state=FSMBet.bet)
