@@ -300,7 +300,10 @@ async def buy_materials(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Напасть на чужой бизнес")
 async def attack_business(message: types.Message):
-    await message.answer(f"Выбери откуда хочешь напасть:", reply_markup=keyboards.attack_business_keyboard)
+    if db.get_balance(message.from_user.id) >= 100:
+        await message.answer(f"Выбери откуда хочешь напасть:", reply_markup=keyboards.attack_business_keyboard)
+    else:
+        await message.answer(f"У тебя не хватает денег, на проведение операции")
     
 
 @dp.message_handler(lambda message: message.text in ["Зайти с черного хода", "Высадиться на крышу"])
@@ -312,6 +315,7 @@ async def shoot(message: types.Message):
         db.set_business_balance(aim[0], round(db.get_business_balance(aim[0])*0.95))
         await message.answer(f"Ты успешно атаковал бизнес игрока {user.username}!\nТы заработал {round(db.get_business_balance(aim[0])*0.05)} рублей",  reply_markup=keyboards.business_manage_keyboard)
     else:
+        db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) - 100)
         await message.answer(f"Задание провалено!\nРасходы на операцию составили {100} рублей",  reply_markup=keyboards.business_manage_keyboard)
 
 
@@ -357,49 +361,48 @@ async def teacher(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "Приступить к работе")
 async def start_work(message: types.Message):
-    task = generate_task()
+    Task = generate_task()
+    db.set_work_answer(message.from_user.id, Task[1])
+    db.set_start_work_time(message.from_user.id, time.time())
     await FSMWork.task.set()
-    await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboards.work_keyboard) 
+    await message.answer(f"Найди определитель матрицы: {Task}", reply_markup=keyboards.work_keyboard) 
 
 
 @dp.message_handler(lambda message: message.text == "Пропустить задание")
 async def skip_work(message: types.Message):
-    task = generate_task()
+    Task = generate_task()
+    db.set_work_answer(message.from_user.id, Task[1])
+    db.set_start_work_time(message.from_user.id, time.time())
     await FSMWork.task.set()
-    await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboards.work_keyboard) 
+    await message.answer(f"Найди определитель матрицы: {Task}", reply_markup=keyboards.work_keyboard) 
 
 
 @dp.message_handler(content_types=["text"], state=FSMWork.task)
 async def get_bet(message: types.Message, state: FSMContext):
-    balance = db.get_balance(message.from_user.id)
     if message.text == "Пропустить задание":
-        task = generate_task()
-        await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboards.work_keyboard)
-    elif message.text.isdigit():
-        if task[1] == int(message.text):
-            task = generate_task()
-            db.set_balance(message.from_user.id, balance + 1000)
-            balance += 1000
-            await message.answer(f"Правильно! Ваш баланс: {balance} рублей", reply_markup=keyboards.work_keyboard)
-            await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboards.work_keyboard)
-        else:
-            await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboards.work_keyboard)
-    
-    elif message.text[0] == "-" and message.text[1:].isdigit():
-        if task[1] == int(message.text):
-            task = generate_task()
-            db.set_balance(message.from_user.id, balance + 1000)
-            balance += 1000
-            await message.answer(f"Правильно! Ваш баланс: {balance} рублей", reply_markup=keyboards.work_keyboard)
-            await message.answer(f"Найди определитель матрицы: {task}", reply_markup=keyboards.work_keyboard)
-        else:
-            await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboards.work_keyboard)
-
+        Task = generate_task()
+        db.set_work_answer(message.from_user.id, Task[1])
+        db.set_start_work_time(message.from_user.id, time.time())
+        await message.answer(f"Найди определитель матрицы: {Task}", reply_markup=keyboards.work_keyboard)
+    elif str(message.text) == str(db.get_work_answer(message.from_user.id)):
+        Task = generate_task()
+        db.set_work_answer(message.from_user.id, Task[1])
+        c = 1
+        len_lid = len(db.get_liderboard_work())
+        for i in db.get_liderboard_work():
+            if i[0] == message.from_user.id:
+                place = c
+            c += 1
+        db.set_balance(message.from_user.id, db.get_balance(message.from_user.id) + round(1000*(1 + place/len_lid)))
+        db.set_average_work_time(message.from_user.id, (db.get_average_work_time(message.from_user.id)*db.get_done_work_count(message.from_user.id) + (time.time() - db.get_start_work_time(message.from_user.id))) / (db.get_done_work_count(message.from_user.id) + 1))
+        db.set_done_work_count(message.from_user.id, db.get_done_work_count(message.from_user.id) + 1)
+        await message.answer(f"Правильно! Ваш баланс: {db.get_balance(message.from_user.id)} рублей", reply_markup=keyboards.work_keyboard)
+        await message.answer(f"Найди определитель матрицы: {Task}", reply_markup=keyboards.work_keyboard)
     elif message.text == "Я устал, Босс":
         await state.finish()
         await message.answer(f"Вы точно хотите уйти?", reply_markup=keyboards.back_keyboard)
     else:
-        await message.answer(f"Решай задачу или иди отсюда, бездарь!", reply_markup=keyboards.back_keyboard)
+        await message.answer(f"Увы, это неверный ответ. Попробуй ещё раз", reply_markup=keyboards.work_keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Магазин")
