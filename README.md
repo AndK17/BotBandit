@@ -1,0 +1,1 @@
+My remake of bot, with my optimization and some changese
